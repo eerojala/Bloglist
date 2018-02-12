@@ -11,19 +11,42 @@ const totalLikes = (blogs) => {
 }
 
 const favouriteBlog = (blogs) => {
-    if (Array.isArray(blogs) && blogs.length !== 0) {
-        const reducer = (mostLiked, current) => {
-            return (mostLiked.likes > current.likes) ? mostLiked : current
-        }
-    
-        return blogs.reduce(reducer)
+    const reducer = (mostLiked, current) => {
+        return (mostLiked.likes > current.likes) ? mostLiked : current
     }
-
-    return null
+    
+    return blogs.reduce(reducer)
 }
+
+const mostBlogs = (blogs) => {
+    const blogDictionary = {}
+    const mostBlogsWritten = {
+        author: '',
+        blogs: 0
+    }   
+
+    blogs.forEach(blog => {
+        const author = blog.author
+        let blogsSoFar
+
+        blogDictionary[author] ? blogsSoFar = blogDictionary[author] + 1 : blogsSoFar = 1
+
+        blogDictionary[author] = blogsSoFar
+        
+       if (blogsSoFar > mostBlogsWritten.blogs) {
+           mostBlogsWritten.author = author
+           mostBlogsWritten.blogs = blogsSoFar
+       }
+    })
+
+    return mostBlogsWritten
+}
+
+
 
 module.exports = {
     dummy,
     totalLikes,
-    favouriteBlog
+    favouriteBlog,
+    mostBlogs
 }

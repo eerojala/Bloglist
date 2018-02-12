@@ -54,7 +54,7 @@ const blogs = [
       likes: 2,
       __v: 0
     }  
-  ]
+]
 
 const noBlogs = []
 
@@ -82,16 +82,19 @@ describe('Favourite blog', () => {
         expect(listHelper.favouriteBlog(blogs)).toEqual(mostLikes)
     })
 
-    test('is null with an empty list', () => {
-        expect(listHelper.favouriteBlog(noBlogs)).toBe(null)
-    })
-
-    test('is null with non-array parameter', () => {
-        expect(listHelper.favouriteBlog("string")).toBe(null)
-    })
-
     test('works with only a single blog', () => {
         const oneBlog = [mostLikes]
         expect(listHelper.favouriteBlog(oneBlog)).toEqual(mostLikes)
+    })
+})
+
+describe('Most blogs', () => {
+    test('returns the writer with most blogs', () => {
+        const blogger = {
+            author: "Robert C. Martin",
+            blogs: 3
+        }
+
+        expect(listHelper.mostBlogs(blogs)).toEqual(blogger)
     })
 })
