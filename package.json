@@ -1,0 +1,30 @@
+{
+  "name": "bloglist",
+  "version": "1.0.0",
+  "description": "Exercise from the Helsinki University course 'Full Stack web development'",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "watch": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eerojala/Bloglist.git"
+  },
+  "author": "Eero Ojala",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eerojala/Bloglist/issues"
+  },
+  "homepage": "https://github.com/eerojala/Bloglist#readme",
+  "devDependencies": {
+    "nodemon": "^1.14.12"
+  },
+  "dependencies": {
+    "cors": "^2.8.4",
+    "dotenv": "^5.0.0",
+    "express": "^4.16.2",
+    "mongoose": "^5.0.4"
+  }
+}
