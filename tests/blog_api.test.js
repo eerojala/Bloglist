@@ -49,6 +49,29 @@ test('a specific blog is called React Patterns', async () => {
     expect(titles).toContain('React patterns')
 })
 
+test('a valid blog can be added', async () => {
+    const newBlog = {
+        title: "Type wars",
+        author: "Robert C. Martin",
+        url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+        likes: 2
+    }
+
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(200)
+        .expect('Content-type', /application\/json/)
+
+    const response = await api
+        .get('/api/blogs')
+
+    const titles = response.body.map(r => r.title)
+
+    expect(response.body.length).toBe(initialBlogs.length + 1)
+    expect(titles).toContain('Type wars')
+})
+
 afterAll(() => {
     server.close()
 })

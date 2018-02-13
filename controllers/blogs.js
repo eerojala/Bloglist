@@ -16,16 +16,17 @@ blogsRouter.get('/', async (request, response) => {
     response.json(blogs.map(formatBlog))
   })
   
- blogsRouter.post('/', (request, response) => {
-    const blog = new Blog(request.body)
-    console.log(blog)
-  
-    blog
-      .save()
-      .then(formatBlog)
-      .then(savedAndFormattedBlog => {
-          response.json(savedAndFormattedBlog)
-      })
+ blogsRouter.post('/', async (request, response) => {
+    try {
+        const blog = new Blog(request.body)
+        console.log(blog)
+    
+        await blog.save()
+        response.json(formatBlog)
+    } catch (exception){
+        console.log(exception)
+        response.status(500).json({error: 'something went wrong...'})
+    }
   })
 
   module.exports = blogsRouter
