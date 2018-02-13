@@ -19,6 +19,11 @@ blogsRouter.get('/', async (request, response) => {
  blogsRouter.post('/', async (request, response) => {
     try {
         const blog = new Blog(request.body)
+
+        if (!blog.title || !blog.url) {
+            return response.status(400).json({ error: 'Missing blog title and/or url' })
+        }
+
         blog.likes ? blog.likes = blog.likes : blog.likes = 0
         console.log(blog)
     
@@ -26,7 +31,7 @@ blogsRouter.get('/', async (request, response) => {
         response.json(formatBlog)
     } catch (exception){
         console.log(exception)
-        response.status(500).json({error: 'something went wrong...'})
+        response.status(500).json({ error: 'something went wrong...' })
     }
   })
 

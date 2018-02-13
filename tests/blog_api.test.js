@@ -72,7 +72,7 @@ test('a valid blog can be added', async () => {
     expect(titles).toContain('Type wars')
 })
 
-test('if no likes then default to 0', async () => {
+test('if no likes in new blog then default to 0', async () => {
     const newBlog = {
         title: "Canonical string reduction",
         author: "Edsger W. Dijkstra",
@@ -94,6 +94,25 @@ test('if no likes then default to 0', async () => {
     expect(savedBlog.author).toBe('Edsger W. Dijkstra')
     expect(savedBlog.url).toBe('http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html')
     expect(response.body[response.body.length - 1].likes).toBe(0)
+})
+
+test('if no title or url in new blog then return HTTP 400 bad request', async () => {
+    const newBlog = {
+        author: 'John Doe',
+        likes: 4
+    }
+    
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+
+    const response = await api
+        .get('/api/blogs')
+
+    const authors = response.body.map(r => r.author)
+
+    expect(authors).not.toContain('John Doe')
 })
 
 afterAll(() => {
