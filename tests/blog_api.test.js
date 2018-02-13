@@ -2,119 +2,103 @@ const supertest = require('supertest')
 const {app, server} = require('../index')
 const api = supertest(app)
 const Blog = require('../models/blog')
+const { format, initialBlogs, nonExistingId, blogsInDb } = require('./test_helper')
 
-const initialBlogs = [
-    {
-      title: "React patterns",
-      author: "Michael Chan",
-      url: "https://reactpatterns.com/",
-      likes: 7,
-    },
-    {
-      title: "Go To Statement Considered Harmful",
-      author: "Edsger W. Dijkstra",
-      url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
-      likes: 5,
-    }
-  ]
+describe('When there are initially some blogs saved', async () => {
+    beforeAll(async () => {
+        await Blog.remove({})
 
-beforeAll(async () => {
-    await Blog.remove({})
+        const blogObjects = initialBlogs.map(blog => new Blog(blog))
+        const promiseArray = blogObjects.map(blog => blog.save())
+        await Promise.all(promiseArray)
+    })
 
-    const blogObjects = initialBlogs.map(blog => new Blog(blog))
-    const promiseArray = blogObjects.map(blog => blog.save())
-    await Promise.all(promiseArray)
-})
+    test('all blogs are returned as json by GET /api/blogs', async () => {
+        const blogsInDatabase = await blogsInDb()
+        
+        const response = await api
+            .get('/api/blogs')
+            .expect(200)
+            .expect('Content-type', /application\/json/)
 
-test('blogs are returned as json', async () => {
-    await api
-        .get('/api/blogs')
-        .expect(200)
-        .expect('Content-type', /application\/json/)
-})
+        const returnedTitles = response.body.map(blog => blog.title)
+        blogsInDatabase.forEach(blog => {
+            expect(returnedTitles).toContain(blog.title)
+        })
+    })
 
-test('all notes are returned', async () => {
-    const response = await api
-        .get('/api/blogs')
+    describe('addition of a new blog in POST /api/blogs', async () => {
+        test('succeeds with valid data', async () => {
+            const blogsBeforePost = await blogsInDb()
 
-    expect(response.body.length).toBe(initialBlogs.length)
-})
+            const newBlog = {
+                title: "Type wars",
+                author: "Robert C. Martin",
+                url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+                likes: 2
+            }
 
-test('a specific blog is called React Patterns', async () => {
-    const response = await api
-        .get('/api/blogs')
+            await api
+                .post('/api/blogs')
+                .send(newBlog)
+                .expect(200)
+                .expect('Content-type', /application\/json/)
 
-    const titles = response.body.map(r => r.title)
+            const blogsAfterPost = await blogsInDb()
 
-    expect(titles).toContain('React patterns')
-})
+            expect(blogsAfterPost.length).toBe(blogsBeforePost.length + 1)
 
-test('a valid blog can be added', async () => {
-    const newBlog = {
-        title: "Type wars",
-        author: "Robert C. Martin",
-        url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
-        likes: 2
-    }
+            const authors = blogsAfterPost.map(blog => blog.author)
 
-    await api
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(200)
-        .expect('Content-type', /application\/json/)
+            expect(authors).toContain('Robert C. Martin')
+        })
 
-    const response = await api
-        .get('/api/blogs')
+        test('succeeds and is given 0 likes if no likes were initially given', async () => {
+            const newBlog = {
+                title: "Canonical string reduction",
+                author: "Edsger W. Dijkstra",
+                url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html"
+            }
 
-    const titles = response.body.map(r => r.title)
+            const blogsBeforePost = await blogsInDb()
+            const likesBeforePost = blogsBeforePost.map(blog => blog.likes)
 
-    expect(response.body.length).toBe(initialBlogs.length + 1)
-    expect(titles).toContain('Type wars')
-})
+            expect(likesBeforePost).not.toContain(0)
 
-test('if no likes in new blog then default to 0', async () => {
-    const newBlog = {
-        title: "Canonical string reduction",
-        author: "Edsger W. Dijkstra",
-        url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html"
-    }
+            await api
+                .post('/api/blogs')
+                .send(newBlog)
+                .expect(200)
+                .expect('Content-type', /application\/json/)
 
-    await api
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(200)
-        .expect('Content-type', /application\/json/)
+            const blogsAfterPost = await blogsInDb()
+            const urls = blogsAfterPost.map(blog => blog.url)
+            const likesAfterPost = blogsAfterPost.map(blog => blog.likes)
 
-    const response = await api
-        .get('/api/blogs')
+            expect(urls).toContain('http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html')
+            expect(likesAfterPost).toContain(0)
+        })
 
-    const savedBlog = response.body[response.body.length-1]
+        test('fails if no title or url in new blog and returns HTTP 400 bad request', async () => {
+            const newBlog = {
+                author: 'John Doe',
+                likes: 4
+            }
 
-    expect(savedBlog.title).toBe('Canonical string reduction')
-    expect(savedBlog.author).toBe('Edsger W. Dijkstra')
-    expect(savedBlog.url).toBe('http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html')
-    expect(response.body[response.body.length - 1].likes).toBe(0)
-})
+            const blogsBeforePost = await blogsInDb()
+            
+            await api
+                .post('/api/blogs')
+                .send(newBlog)
+                .expect(400)
 
-test('if no title or url in new blog then return HTTP 400 bad request', async () => {
-    const newBlog = {
-        author: 'John Doe',
-        likes: 4
-    }
+            const blogsAfterPost = await blogsInDb()
+            expect(blogsAfterPost.length).toBe(blogsBeforePost.length)
+        })
+    })
     
-    await api
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(400)
 
-    const response = await api
-        .get('/api/blogs')
-
-    const authors = response.body.map(r => r.author)
-
-    expect(authors).not.toContain('John Doe')
-})
-
-afterAll(() => {
-    server.close()
+    afterAll(() => {
+        server.close()
+    })
 })
