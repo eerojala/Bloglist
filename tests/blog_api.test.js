@@ -72,6 +72,30 @@ test('a valid blog can be added', async () => {
     expect(titles).toContain('Type wars')
 })
 
+test('if no likes then default to 0', async () => {
+    const newBlog = {
+        title: "Canonical string reduction",
+        author: "Edsger W. Dijkstra",
+        url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html"
+    }
+
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(200)
+        .expect('Content-type', /application\/json/)
+
+    const response = await api
+        .get('/api/blogs')
+
+    const savedBlog = response.body[response.body.length-1]
+
+    expect(savedBlog.title).toBe('Canonical string reduction')
+    expect(savedBlog.author).toBe('Edsger W. Dijkstra')
+    expect(savedBlog.url).toBe('http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html')
+    expect(response.body[response.body.length - 1].likes).toBe(0)
+})
+
 afterAll(() => {
     server.close()
 })
