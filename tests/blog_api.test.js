@@ -96,6 +96,36 @@ describe('When there are initially some blogs saved', async () => {
             expect(blogsAfterPost.length).toBe(blogsBeforePost.length)
         })
     })
+
+    describe('deletion of a blog in DELETE /api/blogs/:id', async () => {
+        let addedBlog
+
+        beforeAll(async () => {
+            addedBlog = new Blog({
+                title: 'First class tests',
+                author: 'Robert C Martin',
+                url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
+                likes: 10
+            })
+            
+            await addedBlog.save()
+        })
+
+        test('succeeds with proper statuscode', async () => {
+            const blogsBeforeDelete = await blogsInDb()
+
+            await api
+                .delete(`/api/blogs/${addedBlog.id}`)
+                .expect(204)
+
+            const blogsAfterDelete = await blogsInDb()
+
+            const titles = blogsAfterDelete.map(blog => blog.title)
+
+            expect(titles).not.toContain(addedBlog.title)
+            expect(blogsAfterDelete.length).toBe(blogsBeforeDelete.length - 1)
+        })
+    })
     
 
     afterAll(() => {
