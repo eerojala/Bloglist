@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
     username: String,
     name: String,
     adult: Boolean,
-    passwordHahs: String
+    passwordHash: String
 })
 
 userSchema.statics.format = (user) => {

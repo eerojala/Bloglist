@@ -35,12 +35,10 @@ describe('When there are initially some users saved', async () => {
 
             const usernames = usersAfterPost.map(user => user.username)
             const names = usersAfterPost.map(user => user.name)
-            const hashedPasswords = usersAfterPost.map(user => user.password)
 
             expect(usersAfterPost.length).toBe(usersBeforePost.length + 1)
             expect(usernames).toContain(newUser.username)
             expect(names).toContain(newUser.name)
-            expect(hashedPasswords).not.toContain(newUser.password)
         })
 
         test('succeeds and defaults to adult if no adult paramter was given', async () => {
