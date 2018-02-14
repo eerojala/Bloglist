@@ -2,7 +2,7 @@ const supertest = require('supertest')
 const {app, server} = require('../index')
 const api = supertest(app)
 const Blog = require('../models/blog')
-const { format, initialBlogs, nonExistingId, blogsInDb } = require('./test_helper')
+const { initialBlogs, nonExistingId, blogsInDb } = require('./test_helper')
 
 describe('When there are initially some blogs saved', async () => {
     beforeAll(async () => {
@@ -10,6 +10,7 @@ describe('When there are initially some blogs saved', async () => {
 
         const blogObjects = initialBlogs.map(blog => new Blog(blog))
         const promiseArray = blogObjects.map(blog => blog.save())
+        
         await Promise.all(promiseArray)
     })
 
