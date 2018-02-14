@@ -3,4 +3,5 @@ const printToConsole = (printContents) => {
         console.log(printContents)
     }
 }
+
 module.exports = printToConsole

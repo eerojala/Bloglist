@@ -2,8 +2,8 @@ POST http://localhost:3001/api/blogs
 content-type: application/json
 
 {
-    "title": "Type wars",
+    "title": "Type wars 2: The Electric Boogaloo",
     "author": "Robert C. Martin",
-    "url": "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
-    "likes": 2
+    "url": "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars2.html",
+    "likes": 0
 }

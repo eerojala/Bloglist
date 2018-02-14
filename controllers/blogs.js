@@ -1,15 +1,24 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const printToConsole = require('../utils/controller_helper')
 
 blogsRouter.get('/', async (request, response) => {
-    const blogs = await Blog.find({})
+    const blogs = await Blog
+        .find({})
+        .populate('user', { _id: 1, username: 1, name: 1 })
+
     response.json(blogs.map(Blog.format))
 })
   
  blogsRouter.post('/', async (request, response) => {
     try {
         const blog = new Blog(request.body)
+
+        const users = await User.find({})
+
+        const user = users[users.length - 1]
+        blog.user = user
 
         if (!blog.title || !blog.url) {
             return response.status(400).json({ error: 'Missing blog title and/or url' })
@@ -18,7 +27,11 @@ blogsRouter.get('/', async (request, response) => {
         blog.likes ? blog.likes = blog.likes : blog.likes = 0
         printToConsole(blog)
     
-        await blog.save()
+        const savedBlog = await blog.save()
+
+        user.blogs = user.blogs.concat(savedBlog._id)
+        await user.save()
+
         response.json(Blog.format(blog))
     } catch (exception){
         printToConsole(exception)
