@@ -1,6 +1,6 @@
 POST http://localhost:3001/api/blogs
 content-type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RlciIsImlkIjoiNWE4NGJjMGI0YWIzNzcxM2Q0NzhmN2FiIiwiaWF0IjoxNTE4NjU1MDcxfQ.yeRirg9yRhYyqVATKNE9KAE8pqKCHGBSJGDz3vTqqdY
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RhYWphIiwiaWQiOiI1YTg0ZThhYzZiYjUzYTMwMjhhZjA0MjEiLCJpYXQiOjE1MTg2NTk5Nzl9.7oj3l04RznBxFqrOdLpD1t77sxLPC3pwUzpXUTgN3I4
 
 {
     "title": "Type wars 2: The Electric Boogaloo",
@@ -9,3 +9,4 @@ Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc
     "likes": 0,
     "userId": "5a84bc0b4ab37713d478f7ab"
 }
+
