@@ -14,15 +14,17 @@ blogsRouter.get('/', async (request, response) => {
   
  blogsRouter.post('/', async (request, response) => {
     try {
-        const body = request.body
-        const token = request.token
-        const decodedToken = jwt.verify(token, process.env.SECRET)
+        const decodedToken = jwt.verify(request.token, process.env.SECRET)
 
-        if (!token || !decodedToken.id) {
+        if (!request.token || !decodedToken.id) {
             return response.status(401).json({ error: 'Token missing or invalid' })
         }
 
         const user = await User.findById(decodedToken.id)
+
+        if (!user) {
+            return response.status(400).json({ error: 'Invalid user' })
+        }
 
         const blog = new Blog(request.body)
         blog.user = user
@@ -52,12 +54,28 @@ blogsRouter.get('/', async (request, response) => {
 
 blogsRouter.delete('/:id', async (request, response) => {
     try {
+        const decodedToken = jwt.verify(request.token, process.env.SECRET)
+
+        const user = await User.findById(decodedToken.id)
+        const blog = await Blog.findById(request.params.id)
+
+        if (!user || !blog.user || user.id.toString() !== blog.user.toString() ) {
+            return response.status(400).json({ error: 'Invalid user' })
+        }
+
         await Blog.findByIdAndRemove(request.params.id)
 
         response.status(204).end()
     } catch (exception) {
         printToConsole(exception)
-        response.status(400).send({ error: 'Malformatted id' })
+
+        if (exception.name === 'JsonWebTokenError') {
+            response.status(401).json({ error: exception.message })
+        } else if (exception.name === 'CastError'){
+            response.status(400).send({ error: 'Malformatted id' })
+        } else {
+            response.status(400).json({ error: 'Error, something went wrong' })
+        }
     }
 })
 
