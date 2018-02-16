@@ -6,7 +6,10 @@ const { initialUsers, usersInDb } = require('../tests/test_helper')
 
 describe('When there are initially some users saved', async () => {
     beforeAll(async () => {
-        await User.remove({})
+        await User.remove({ username : initialUsers[0].username })
+        await User.remove({ username : initialUsers[1].username })
+        await User.remove({ username: 'mluukkai' })
+        await User.remove({ username: 'rotta' })
 
         const userObjects = initialUsers.map(user => new User(user))
         const promiseArray = userObjects.map(user => user.save())

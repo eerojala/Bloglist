@@ -2,7 +2,8 @@ const supertest = require('supertest')
 const {app, server} = require('../index')
 const api = supertest(app)
 const Blog = require('../models/blog')
-const { initialBlogs, nonExistingId, blogsInDb } = require('./test_helper')
+const User = require('../models/user')
+const { initialBlogs, nonExistingId, blogsInDb, initialUsers } = require('./test_helper')
 
 describe('When there are initially some blogs saved', async () => {
     beforeAll(async () => {
@@ -10,7 +11,7 @@ describe('When there are initially some blogs saved', async () => {
 
         const blogObjects = initialBlogs.map(blog => new Blog(blog))
         const promiseArray = blogObjects.map(blog => blog.save())
-        
+
         await Promise.all(promiseArray)
     })
 
@@ -29,79 +30,123 @@ describe('When there are initially some blogs saved', async () => {
     })
 
     describe('addition of a new blog in POST /api/blogs', async () => {
-        test('succeeds with valid data', async () => {
+        test('fails when the user is not logged in', async () => {
             const blogsBeforePost = await blogsInDb()
 
             const newBlog = {
-                title: "Type wars",
-                author: "Robert C. Martin",
-                url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
-                likes: 2
+                title: 'BlogTitle',
+                author: 'BlogAuthor',
+                url: 'http://blogurl.com',
+                likes: 9
             }
 
-            await api
+            const response = await api
                 .post('/api/blogs')
                 .send(newBlog)
-                .expect(200)
+                .expect(401)
                 .expect('Content-type', /application\/json/)
 
             const blogsAfterPost = await blogsInDb()
-
-            expect(blogsAfterPost.length).toBe(blogsBeforePost.length + 1)
-            expect(blogsBeforePost).not.toEqual(blogsAfterPost)
 
             const titles = blogsAfterPost.map(blog => blog.title)
-            const authors = blogsAfterPost.map(blog => blog.author)
-            const urls = blogsAfterPost.map(blog => blog.url)
-            const likes = blogsAfterPost.map(blog => blog.likes)
 
-            expect(titles).toContain(newBlog.title)
-            expect(authors).toContain(newBlog.author)
-            expect(urls).toContain(newBlog.url)
-            expect(likes).toContain(newBlog.likes)
-        })
-
-        test('succeeds and is given 0 likes if no likes were initially given', async () => {
-            const newBlog = {
-                title: "Canonical string reduction",
-                author: "Edsger W. Dijkstra",
-                url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html"
-            }
-
-            const blogsBeforePost = await blogsInDb()
-            const likesBeforePost = blogsBeforePost.map(blog => blog.likes)
-
-            expect(likesBeforePost).not.toContain(0)
-
-            await api
-                .post('/api/blogs')
-                .send(newBlog)
-                .expect(200)
-                .expect('Content-type', /application\/json/)
-
-            const blogsAfterPost = await blogsInDb()
-            const urls = blogsAfterPost.map(blog => blog.url)
-            const likesAfterPost = blogsAfterPost.map(blog => blog.likes)
-
-            expect(urls).toContain('http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html')
-            expect(likesAfterPost).toContain(0)
-        })
-
-        test('fails if no title or url in new blog and returns HTTP 400 bad request', async () => {
-            const newBlog = {
-                author: 'John Doe',
-                likes: 4
-            }
-
-            const blogsBeforePost = await blogsInDb()
-            
-            await api
-                .post('/api/blogs')
-                .send(newBlog)
-                .expect(400)
-
-            const blogsAfterPost = await blogsInDb()
             expect(blogsAfterPost.length).toBe(blogsBeforePost.length)
+            expect(blogsAfterPost).not.toContain(newBlog.title)
+        })
+
+        describe('when the user is logged in', async () => {
+            let token
+            
+            beforeAll(async () => {
+                const user = {
+                    username: 'master',
+                    password: 'ysecret'
+                }
+
+                const response = await api
+                    .post('/api/login')
+                    .send(user)
+
+                token = response.body.token
+            })
+
+            test('succeeds with valid data', async () => {
+                const blogsBeforePost = await blogsInDb()
+
+                const newBlog = {
+                    title: "Type wars",
+                    author: "Robert C. Martin",
+                    url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+                    likes: 2
+                }
+
+                await api
+                    .post('/api/blogs')
+                    .set('Authorization', 'bearer ' + token)
+                    .send(newBlog)
+                    .expect(200)
+                    .expect('Content-type', /application\/json/)
+
+                const blogsAfterPost = await blogsInDb()
+
+                expect(blogsAfterPost.length).toBe(blogsBeforePost.length + 1)
+                expect(blogsBeforePost).not.toEqual(blogsAfterPost)
+
+                const titles = blogsAfterPost.map(blog => blog.title)
+                const authors = blogsAfterPost.map(blog => blog.author)
+                const urls = blogsAfterPost.map(blog => blog.url)
+                const likes = blogsAfterPost.map(blog => blog.likes)
+
+                expect(titles).toContain(newBlog.title)
+                expect(authors).toContain(newBlog.author)
+                expect(urls).toContain(newBlog.url)
+                expect(likes).toContain(newBlog.likes)
+            })
+
+            test('succeeds and is given 0 likes if no likes were initially given', async () => {
+                const newBlog = {
+                    title: "Canonical string reduction",
+                    author: "Edsger W. Dijkstra",
+                    url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html"
+                }
+
+                const blogsBeforePost = await blogsInDb()
+                const likesBeforePost = blogsBeforePost.map(blog => blog.likes)
+
+                expect(likesBeforePost).not.toContain(0)
+
+                await api
+                    .post('/api/blogs')
+                    .set('Authorization', 'bearer ' + token)
+                    .send(newBlog)
+                    .expect(200)
+                    .expect('Content-type', /application\/json/)
+
+                const blogsAfterPost = await blogsInDb()
+                const urls = blogsAfterPost.map(blog => blog.url)
+                const likesAfterPost = blogsAfterPost.map(blog => blog.likes)
+
+                expect(urls).toContain('http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html')
+                expect(likesAfterPost).toContain(0)
+            })
+
+            test('fails if no title or url in new blog and returns HTTP 400 bad request', async () => {
+                const newBlog = {
+                    author: 'John Doe',
+                    likes: 4
+                }
+
+                const blogsBeforePost = await blogsInDb()
+                
+                await api
+                    .post('/api/blogs')
+                    .set('Authorization', 'bearer ' + token)
+                    .send(newBlog)
+                    .expect(400)
+
+                const blogsAfterPost = await blogsInDb()
+                expect(blogsAfterPost.length).toBe(blogsBeforePost.length)
+            })
         })
     })
 
@@ -210,7 +255,6 @@ describe('When there are initially some blogs saved', async () => {
         })
     })
     
-
     afterAll(() => {
         server.close()
     })
