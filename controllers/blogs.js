@@ -4,16 +4,6 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 const printToConsole = require('../utils/controller_helper')
 
-const getTokenFrom = (request) => {
-    const authorization = request.get('authorization')
-
-    if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-        return authorization.substring(7)
-    }
-
-    return null
-}
-
 blogsRouter.get('/', async (request, response) => {
     const blogs = await Blog
         .find({})
@@ -25,7 +15,7 @@ blogsRouter.get('/', async (request, response) => {
  blogsRouter.post('/', async (request, response) => {
     try {
         const body = request.body
-        const token = getTokenFrom(request)
+        const token = request.token
         const decodedToken = jwt.verify(token, process.env.SECRET)
 
         if (!token || !decodedToken.id) {

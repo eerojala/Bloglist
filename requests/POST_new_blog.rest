@@ -1,11 +1,11 @@
 POST http://localhost:3001/api/blogs
 content-type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RlciIsImlkIjoiNWE4NGJjMGI0YWIzNzcxM2Q0NzhmN2FiIiwiaWF0IjoxNTE4NjU1MDcxfQ.yeRirg9yRhYyqVATKNE9KAE8pqKCHGBSJGDz3vTqqdY
-
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RlciIsImlkIjoiNWE4NzBlODdlOTg4ZjgyZmIwY2VkOGJkIiwiaWF0IjoxNTE4ODAwNjMzfQ.NkZwc2UyFQ1JCd4FkfEaYkaridZKQbXd7FWANQ8YMfQ
+                      
 {
-    "title": "Type wars 2: The Electric Boogaloo",
+    "title": "Type wars",
     "author": "Robert C. Martin",
-    "url": "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars2.html",
-    "likes": 0,
-    "userId": "5a84bc0b4ab37713d478f7ab"
+    "url": "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+    "likes": 4,
+    "userId": "5a870e87e988f82fb0ced8bd"
 }
